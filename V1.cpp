@@ -21,6 +21,9 @@ int main() {
     int N = stoi(iN);
     int M = stoi(iM);
     int K = stoi(iK);
+    int randomNumar1;
+    int randomNumar2;
+    int putereMaxima = 0;
 
     /*
     std::cout << N << endl;
@@ -45,12 +48,20 @@ int main() {
 
 
     for (int i = 0; i < N; i++) {
-        int randomNumar = rand() % 5 + 1;
-        std::cout << randomNumar << " ";
-        randomNumar = rand() % 5 + 1;
-        std::cout << randomNumar << endl;
+        randomNumar1 = rand() % 5 + 1;
+        std::cout << randomNumar1 << " ";
+        randomNumar2 = rand() % 5 + 1;
+        std::cout << randomNumar2 << endl;
+        if (randomNumar1 > randomNumar2) {
+            putereMaxima = putereMaxima + randomNumar1;
+        };
+        if (randomNumar2 > randomNumar1) {
+            putereMaxima = putereMaxima + randomNumar2;
+        };
     };
 
+    std::cout << endl;
+    std::cout << putereMaxima << endl;
 
     return 0;
 }
