@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Custom Map Engine</title>
+    
+    <!-- 1. Leaflet CSS Framework -->
+    <link rel="stylesheet" href="https://unpkg.com" />
+    
+    <!-- 2. UI Layout Styling -->
+    <style>
+        body { margin: 0; padding: 0; font-family: Arial, sans-serif; }
+        #map { height: 100vh; width: 100vw; z-index: 1; }
+        
+        /* Floating Google-like Search Bar Styling */
+        .search-container {
+            position: absolute;
+            top: 20px;
+            left: 50px;
+            z-index: 1000;
+            background: white;
+            padding: 10px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            display: flex;
+            gap: 5px;
+        }
+        .search-container input {
+            padding: 8px;
+            width: 250px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        .search-container button {
+            padding: 8px 12px;
+            background: #1a73e8;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .search-container button:hover { background: #1557b0; }
+    </style>
+</head>
+<body>
+
+    <!-- Search UI Overlay -->
+    <div class="search-container">
+        <input type="text" id="location-input" placeholder="Search for cities or locations...">
+        <button onclick="searchLocation()">Search</button>
+    </div>
+
+    <!-- Map Container Target -->
+    <div id="map"></div>
+
+    <!-- 3. Leaflet JavaScript Framework -->
+    <script src="https://unpkg.com"></script>
+    
+    <script>
+        // 4. Initialize Map Component (Centered globally at zoom level 3)
+        const map = L.map('map').setView([20, 0], 3);
+
+        // 5. Apply Map Tiles Layer (Using CartoDB Voyager for a clean, modern design)
+        L.tileLayer('https://{s}://{z}/{x}/{y}{r}.png', {
+            maxZoom: 19,
+            attribution: '© OpenStreetMap contributors © CARTO'
+        }).addTo(map);
+
+        // 6. Interactive Element: Double-Click Map to Drop Custom Marker Pins
+        map.on('dblclick', function(e) {
+            const description = prompt("Enter a description for this marker pin:");
+            if (description) {
+                L.marker([e.latlng.lat, e.latlng.lng])
+                    .addTo(map)
+                    .bindPopup(`<b>Custom Save Point:</b><br>${description}`)
+                    .openPopup();
+            }
+        });
+        // Disable default map zoom on double click so our feature works smoothly
+        map.doubleClickZoom.disable();
+
+        // 7. Core Feature: OpenStreetMap Nominatim Geocoding Search Engine API Fetch
+        function searchLocation() {
+            const query = document.getElementById('location-input').value;
+            if (!query) return alert("Please type a location name first!");
+
+            fetch(`https://openstreetmap.org{encodeURIComponent(query)}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.length > 0) {
+                        const target = data[0];
+                        const lat = parseFloat(target.lat);
+                        const lon = parseFloat(target.lon);
+
+                        // Fly map viewport camera smoothly to found location coordinates
+                        map.flyTo([lat, lon], 13);
+
+                        // Drop an active marker at the search result coordinate
+                        L.marker([lat, lon])
+                            .addTo(map)
+                            .bindPopup(`<b>${target.display_name}</b>`)
+                            .openPopup();
+                    } else {
+                        alert("Location could not be found. Try checking your spelling!");
+                    }
+                })
+                .catch(error => {
+                    console.error("Search API Connection Error:", error);
+                    alert("Error connecting to search registry.");
+                });
+        }
+    </script>
+</body>
+</html>
